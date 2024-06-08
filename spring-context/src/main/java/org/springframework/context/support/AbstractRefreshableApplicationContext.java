@@ -119,13 +119,17 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		// 判断 是否为已经有bean工厂  如果有  销毁重新创建
 		if (hasBeanFactory()) {
 			destroyBeans();
 			closeBeanFactory();
 		}
 		try {
+			//创建一个bean工厂
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			//设置 序列化id
 			beanFactory.setSerializationId(getId());
+			//设置属性值
 			customizeBeanFactory(beanFactory);
 			loadBeanDefinitions(beanFactory);
 			this.beanFactory = beanFactory;
@@ -194,6 +198,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#setAllowRawInjectionDespiteWrapping
 	 */
 	protected DefaultListableBeanFactory createBeanFactory() {
+		//创建一个工厂对象
 		return new DefaultListableBeanFactory(getInternalParentBeanFactory());
 	}
 

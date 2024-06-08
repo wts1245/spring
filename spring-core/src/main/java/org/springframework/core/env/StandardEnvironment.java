@@ -72,6 +72,7 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 * @see AbstractEnvironment#customizePropertySources(MutablePropertySources)
 	 * @see #getSystemProperties()
 	 * @see #getSystemEnvironment()
+	 * 由父类的构造方法进行调用
 	 */
 	@Override
 	protected void customizePropertySources(MutablePropertySources propertySources) {
