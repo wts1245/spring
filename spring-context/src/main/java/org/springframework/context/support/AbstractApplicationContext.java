@@ -222,13 +222,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	private final Set<ApplicationListener<?>> applicationListeners = new LinkedHashSet<>();
 
 	/**
-	 * Local listeners registered before refresh.
+	 * Local listeners registered before refresh. 本地的监听器
 	 */
 	@Nullable
 	private Set<ApplicationListener<?>> earlyApplicationListeners;
 
 	/**
-	 * ApplicationEvents published before the multicaster setup.
+	 * ApplicationEvents published before the multicaster setup.  多播器启动之前  需要进行发布的时间集合
 	 */
 	@Nullable
 	private Set<ApplicationEvent> earlyApplicationEvents;
@@ -238,7 +238,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Create a new AbstractApplicationContext with no parent.
 	 */
 	public AbstractApplicationContext() {
-		//用于解析系统运行需要的处理器
+		// 用于解析系统运行需要的处理器
 		this.resourcePatternResolver = getResourcePatternResolver();
 	}
 
@@ -476,7 +476,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
 	 */
 	protected ResourcePatternResolver getResourcePatternResolver() {
-		//创建一个资源模式解析器  说白了就是用来解析xml文件用的
+		// 创建一个资源模式解析器  说白了就是用来解析xml文件用的
 		return new PathMatchingResourcePatternResolver(this);
 	}
 
@@ -497,9 +497,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public void setParent(@Nullable ApplicationContext parent) {
 		this.parent = parent;
-		//1、判断 父容器是否为空，如果父容器不为空 则后去父容器的环境配置
-		//2、判断父容器的环境配置是否为可配置的环境
-		//3、如果是，则将父容器的环境配置合并到子容器的环境配置中
+		// 1、判断 父容器是否为空，如果父容器不为空 则后去父容器的环境配置
+		// 2、判断父容器的环境配置是否为可配置的环境
+		// 3、如果是，则将父容器的环境配置合并到子容器的环境配置中
 		if (parent != null) {
 			Environment parentEnvironment = parent.getEnvironment();
 			if (parentEnvironment instanceof ConfigurableEnvironment) {
@@ -540,23 +540,24 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+		// 加锁 就是为了防止刷新或者销毁容器被中断
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
-			//做容器刷新前的准备工作
+			// 做容器刷新前的准备工作
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			//创建容器对象，DefaultListableBeanFactory
+			// 创建容器对象，DefaultListableBeanFactory
 			// 同时加载xml文件的属性值到当前工厂中，最重要的就是BeanDefinition
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
-			//给bean工厂设置属性值
+			// 给bean工厂设置属性值
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				//完成bean工厂的一些初始化操作
+				// 完成bean工厂的一些初始化操作
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
@@ -564,7 +565,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				//注册并实例化所有BeanPostProcessor
+				// 注册并实例化所有BeanPostProcessor
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -577,7 +578,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				onRefresh();
 
 				// Check for listener beans and register them.
-				//注册事件监听器
+				// 注册事件监听器
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
@@ -613,9 +614,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void prepareRefresh() {
 		// Switch to active.
-		//设置开启时间
+		// 设置开启时间
 		this.startupDate = System.currentTimeMillis();
-		//设置关闭和活跃的标志位
+		// 设置关闭和活跃的标志位
 		this.closed.set(false);
 		this.active.set(true);
 
@@ -628,19 +629,21 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		// 设置一些初始化资源
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable: 验证所有标记为必需的属性是否可解析
 		// see ConfigurablePropertyResolver#setRequiredProperties
-		//获取环境对象 并设置环境对象中的属性值
+		// 获取环境对象 并设置环境对象中的属性值
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...  存储刷新前的ApplicationListener
-		//设置监听器和事件的集合对象
+		// 判断刷新前的应用程序监听器集合是否为空，如果为空，则将当前容器中的所有ApplicationListener添加到集合中
 		if (this.earlyApplicationListeners == null) {
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
 		} else {
 			// Reset local application listeners to pre-refresh state.
+			//如果不等于空，则清空事件集合，并重新添加到集合中
 			this.applicationListeners.clear();
 			this.applicationListeners.addAll(this.earlyApplicationListeners);
 		}
@@ -685,7 +688,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
-		//设置忽略的aware接口
+		// 设置忽略的aware接口
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
@@ -898,7 +901,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Register a default embedded value resolver if no BeanFactoryPostProcessor
 		// (such as a PropertySourcesPlaceholderConfigurer bean) registered any before:
 		// at this point, primarily for resolution in annotation attribute values.
-		//这段代码的作用是检查beanFactory是否具有嵌入值解析器，如果没有，则添加一个解析器，该解析器使用getEnvironment().resolvePlaceholders(strVal)方法解析字符串中的占位符。
+		// 这段代码的作用是检查beanFactory是否具有嵌入值解析器，如果没有，则添加一个解析器，该解析器使用getEnvironment().resolvePlaceholders(strVal)方法解析字符串中的占位符。
 		if (!beanFactory.hasEmbeddedValueResolver()) {
 			beanFactory.addEmbeddedValueResolver(strVal -> getEnvironment().resolvePlaceholders(strVal));
 		}
@@ -913,7 +916,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
-		//冻结所有 Bean 定义，表示不再修改或后处理已注册的 Bean 定义
+		// 冻结所有 Bean 定义，表示不再修改或后处理已注册的 Bean 定义
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
